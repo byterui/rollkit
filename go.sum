@@ -72,8 +72,6 @@ github.com/btcsuite/btcd v0.22.1/go.mod h1:wqgTSL29+50LRkmOVknEdmt8ZojIzhuWvgu/i
 github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1 h1:q0rUy8C/TYNBQS1+CGKw68tLOFYSNEs0TFnxxnS9+4U=
 github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce h1:YtWJF7RHm2pYCvA5t0RPmAaLUhREsKuKd+SLhxFbFeQ=
 github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23/go.mod h1:bbYlZJ7hK1yFx9hf58LP0zeX7UjIGs20ufpu3evjr+s=
-github.com/celestiaorg/go-cnc v0.2.0 h1:QBcWz1v6341r+5Urbr/eaCm9S8D2wwEwielKcwBc1Z4=
-github.com/celestiaorg/go-cnc v0.2.0/go.mod h1:CZBVUhQnJnAVcfQnnEAqREF+PNWr97m/BhJ5fp1K44Q=
 github.com/celestiaorg/go-header v0.1.0 h1:K/atYWwZ/bjMLJ/Apy0dokbREa8BGgxUMiMjhRHlF4E=
 github.com/celestiaorg/go-header v0.1.0/go.mod h1:AR7GQ1519TDLEFxRC0rt9emq1IvhU+Nf+1Ufe3JI3nA=
 github.com/celestiaorg/tendermint v0.34.22-0.20221202214355-3605c597500d h1:OH9dp6WWotp53aG58xSdLWd+F1Znf3DhA0BadyJO4Aw=
@@ -125,6 +123,8 @@ github.com/dgraph-io/ristretto v0.1.1/go.mod h1:S1GPSBCYCIhmVNfcth17y2zZtQT6wzkz
 github.com/dgryski/go-farm v0.0.0-20190423205320-6a90982ecee2/go.mod h1:SqUrOPUnsFjfmXRMNPybcSiG0BgUW2AuFH8PAnS2iTw=
 github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13 h1:fAjc9m62+UWV/WAFKLNi6ZS0675eEUC9y3AlwSbQu1Y=
 github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13/go.mod h1:SqUrOPUnsFjfmXRMNPybcSiG0BgUW2AuFH8PAnS2iTw=
+github.com/distractedm1nd/go-cnc v0.0.0-20230113100500-730235faf934 h1:mRhG16zTuB/Xazizbf0ZBtQgSKPUk1ETjxFyKFvHE7Y=
+github.com/distractedm1nd/go-cnc v0.0.0-20230113100500-730235faf934/go.mod h1:CZBVUhQnJnAVcfQnnEAqREF+PNWr97m/BhJ5fp1K44Q=
 github.com/docker/go-units v0.4.0/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDDbaIK4Dk=
 github.com/docker/go-units v0.5.0 h1:69rxXcBk27SvSaaxTtLh/8llcHD8vYHT7WSdRZ/jvr4=
 github.com/docker/go-units v0.5.0/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDDbaIK4Dk=

@@ -176,3 +176,5 @@ replace (
 	github.com/tendermint/tendermint => github.com/celestiaorg/tendermint v0.34.22-0.20221202214355-3605c597500d
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
 )
+
+replace github.com/celestiaorg/go-cnc v0.2.0 => github.com/distractedm1nd/go-cnc v0.0.0-20230113100500-730235faf934
