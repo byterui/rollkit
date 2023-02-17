@@ -4,6 +4,7 @@ import (
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmversion "github.com/tendermint/tendermint/proto/tendermint/version"
+	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/rollkit/rollkit/types"
@@ -129,6 +130,27 @@ func ToABCICommit(commit *types.Commit) *tmtypes.Commit {
 		commitSig := tmtypes.CommitSig{
 			BlockIDFlag: tmtypes.BlockIDFlagCommit,
 			Signature:   sig,
+		}
+		tmCommit.Signatures = append(tmCommit.Signatures, commitSig)
+	}
+
+	return &tmCommit
+}
+
+func ToABCICommitForTempIBC(commit *types.Commit, validators *ctypes.ResultValidators) *tmtypes.Commit {
+	tmCommit := tmtypes.Commit{
+		Height: int64(commit.Height),
+		Round:  0,
+		BlockID: tmtypes.BlockID{
+			Hash:          tmbytes.HexBytes(commit.HeaderHash),
+			PartSetHeader: tmtypes.PartSetHeader{},
+		},
+	}
+	for i, sig := range commit.Signatures {
+		commitSig := tmtypes.CommitSig{
+			BlockIDFlag:      tmtypes.BlockIDFlagCommit,
+			Signature:        sig,
+			ValidatorAddress: validators.Validators[i].Address,
 		}
 		tmCommit.Signatures = append(tmCommit.Signatures, commitSig)
 	}

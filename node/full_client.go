@@ -493,7 +493,13 @@ func (c *FullClient) Commit(ctx context.Context, height *int64) (*ctypes.ResultC
 	if err != nil {
 		return nil, err
 	}
-	commit := abciconv.ToABCICommit(com)
+
+	validators, err := c.Validators(ctx, height, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	commit := abciconv.ToABCICommitForTempIBC(com, validators)
 	block, err := abciconv.ToABCIBlock(b)
 	if err != nil {
 		return nil, err
