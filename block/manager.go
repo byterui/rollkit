@@ -11,6 +11,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/merkle"
+	"github.com/tendermint/tendermint/libs/bytes"
 	"github.com/tendermint/tendermint/proxy"
 	tmtypes "github.com/tendermint/tendermint/types"
 	"go.uber.org/multierr"
@@ -487,7 +488,7 @@ func (m *Manager) publishBlock(ctx context.Context) error {
 			return err
 		}
 
-				// Save commit like tendermint, just for IBC test.
+		// Save commit like tendermint, just for IBC test.
 		// Or make the chain base rollkit become solochain?
 		address, err := getAddress(m.proposerKey)
 		if err != nil {
@@ -500,6 +501,9 @@ func (m *Manager) publishBlock(ctx context.Context) error {
 			Timestamp:        block.Header.Time(),
 			ValidatorAddress: address,
 			ValidatorIndex:   0,
+			BlockID: tmtypes.BlockID{
+				Hash: bytes.HexBytes(block.Hash()),
+			},
 		}
 
 		v := vote.ToProto()
