@@ -487,6 +487,46 @@ func (m *Manager) publishBlock(ctx context.Context) error {
 			return err
 		}
 
+				// Save commit like tendermint, just for IBC test.
+		// Or make the chain base rollkit become solochain?
+		address, err := getAddress(m.proposerKey)
+		if err != nil {
+			return err
+		}
+
+		vote := tmtypes.Vote{
+			Height:           block.Header.Height(),
+			Round:            0,
+			Timestamp:        block.Header.Time(),
+			ValidatorAddress: address,
+			ValidatorIndex:   0,
+		}
+
+		v := vote.ToProto()
+		vb := tmtypes.VoteSignBytes(m.genesis.ChainID, v)
+		sig, err := m.proposerKey.Sign(vb)
+
+		if err != nil {
+			return err
+		}
+
+		vc := tmtypes.Commit{
+			Height:  vote.Height,
+			Round:   vote.Round,
+			BlockID: vote.BlockID,
+			Signatures: []tmtypes.CommitSig{{
+				BlockIDFlag:      tmtypes.BlockIDFlagCommit,
+				ValidatorAddress: address,
+				Timestamp:        v.Timestamp,
+				Signature:        sig,
+			}},
+		}
+
+		err = m.store.SaveTmCommit(block, &vc)
+		if err != nil {
+			return err
+		}
+
 		// SaveBlock commits the DB tx
 		err = m.store.SaveBlock(block, commit)
 		if err != nil {
