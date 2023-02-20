@@ -8,10 +8,11 @@ import (
 	"time"
 
 	"github.com/libp2p/go-libp2p/core/crypto"
+	abciconv "github.com/rollkit/rollkit/conv/abci"
 	abci "github.com/tendermint/tendermint/abci/types"
+
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/merkle"
-	"github.com/tendermint/tendermint/libs/bytes"
 	"github.com/tendermint/tendermint/proxy"
 	tmtypes "github.com/tendermint/tendermint/types"
 	"go.uber.org/multierr"
@@ -495,6 +496,13 @@ func (m *Manager) publishBlock(ctx context.Context) error {
 			return err
 		}
 
+		abciBlock, err := abciconv.ToABCIBlock(block)
+		if err != nil {
+			return err
+		}
+
+		abciBlockPartSet := abciBlock.MakePartSet(tmtypes.BlockPartSizeBytes)
+
 		vote := tmtypes.Vote{
 			Height:           block.Header.Height(),
 			Round:            0,
@@ -502,7 +510,8 @@ func (m *Manager) publishBlock(ctx context.Context) error {
 			ValidatorAddress: address,
 			ValidatorIndex:   0,
 			BlockID: tmtypes.BlockID{
-				Hash: bytes.HexBytes(block.Hash()),
+				Hash:          abciBlock.Hash(),
+				PartSetHeader: abciBlockPartSet.Header(),
 			},
 		}
 
