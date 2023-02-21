@@ -13,6 +13,7 @@ import (
 
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/merkle"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"github.com/tendermint/tendermint/proxy"
 	tmtypes "github.com/tendermint/tendermint/types"
 	"go.uber.org/multierr"
@@ -504,6 +505,7 @@ func (m *Manager) publishBlock(ctx context.Context) error {
 		abciBlockPartSet := abciBlock.MakePartSet(tmtypes.BlockPartSizeBytes)
 
 		vote := tmtypes.Vote{
+			Type:             tmproto.PrecommitType,
 			Height:           block.Header.Height(),
 			Round:            0,
 			Timestamp:        block.Header.Time(),
@@ -517,6 +519,7 @@ func (m *Manager) publishBlock(ctx context.Context) error {
 
 		v := vote.ToProto()
 		vb := tmtypes.VoteSignBytes(m.genesis.ChainID, v)
+		fmt.Println("height: ", vote.Height, "votesignbytes: ", vb)
 		sig, err := m.proposerKey.Sign(vb)
 
 		if err != nil {

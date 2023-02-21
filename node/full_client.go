@@ -500,6 +500,21 @@ func (c *FullClient) Commit(ctx context.Context, height *int64) (*ctypes.ResultC
 		return nil, err
 	}
 
+	vr, err := c.Validators(ctx, height, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	v0 := vr.Validators[0]
+	fmt.Println("validator address: ", v0.Address)
+	fmt.Println("commit address", commit.Signatures[0].ValidatorAddress)
+
+	bc := commit.VoteSignBytes(c.node.genesis.ChainID, 0)
+	fmt.Println("votesignBytes:", bc)
+
+	cvrs := v0.PubKey.VerifySignature(bc, commit.Signatures[0].Signature)
+	fmt.Println("verify commit result: ", cvrs)
+
 	return ctypes.NewResultCommit(&block.Header, commit, true), nil
 }
 
