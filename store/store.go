@@ -23,6 +23,7 @@ var (
 	blockPrefix      = "b"
 	indexPrefix      = "i"
 	commitPrefix     = "c"
+	tmcommitPrefix   = "t"
 	statePrefix      = "s"
 	responsesPrefix  = "r"
 	validatorsPrefix = "v"
@@ -81,6 +82,30 @@ func (s *DefaultStore) SaveBlock(block *types.Block, commit *types.Commit) error
 	err = multierr.Append(err, bb.Put(s.ctx, ds.NewKey(getBlockKey(hash)), blockBlob))
 	err = multierr.Append(err, bb.Put(s.ctx, ds.NewKey(getCommitKey(hash)), commitBlob))
 	err = multierr.Append(err, bb.Put(s.ctx, ds.NewKey(getIndexKey(uint64(block.Header.Height()))), hash[:]))
+
+	if err != nil {
+		bb.Discard(s.ctx)
+		return err
+	}
+
+	if err = bb.Commit(s.ctx); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+func (s *DefaultStore) SaveTmCommit(block *types.Block, commit *tmtypes.Commit) error {
+	hash := block.Header.Hash()
+
+	commitBlob, err := commit.ToProto().Marshal()
+	if err != nil {
+		return fmt.Errorf("failed to marshal Commit to binary: %w", err)
+	}
+
+	bb, err := s.db.NewTransaction(s.ctx, false)
+
+	err = multierr.Append(err, bb.Put(s.ctx, ds.NewKey(getTmCommitKey(hash)), commitBlob))
 
 	if err != nil {
 		bb.Discard(s.ctx)
@@ -167,6 +192,30 @@ func (s *DefaultStore) LoadCommitByHash(hash types.Hash) (*types.Commit, error) 
 	return commit, nil
 }
 
+func (s *DefaultStore) LoadTMCommit(height uint64) (*tmtypes.Commit, error) {
+	hash, err := s.loadHashFromIndex(height)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load hash from index: %w", err)
+	}
+	return s.LoadTMCommitByHash(hash)
+}
+
+func (s *DefaultStore) LoadTMCommitByHash(hash types.Hash) (*tmtypes.Commit, error) {
+	commitData, err := s.db.Get(s.ctx, ds.NewKey(getTmCommitKey(hash)))
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve commit from hash %v: %w", hash, err)
+	}
+
+	commitProto := new(tmproto.Commit)
+
+	err = commitProto.Unmarshal(commitData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal Commit into object: %w", err)
+	}
+
+	return tmtypes.CommitFromProto(commitProto)
+}
+
 // UpdateState updates state saved in Store. Only one State is stored.
 // If there is no State in Store, state will be saved.
 func (s *DefaultStore) UpdateState(state types.State) error {
@@ -247,6 +296,10 @@ func getBlockKey(hash types.Hash) string {
 
 func getCommitKey(hash types.Hash) string {
 	return GenerateKey([]interface{}{commitPrefix, hex.EncodeToString(hash[:])})
+}
+
+func getTmCommitKey(hash types.Hash) string {
+	return GenerateKey([]interface{}{tmcommitPrefix, hex.EncodeToString(hash[:])})
 }
 
 func getIndexKey(height uint64) string {

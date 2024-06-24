@@ -8,9 +8,12 @@ import (
 	"time"
 
 	"github.com/libp2p/go-libp2p/core/crypto"
+	abciconv "github.com/rollkit/rollkit/conv/abci"
 	abci "github.com/tendermint/tendermint/abci/types"
+
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/merkle"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"github.com/tendermint/tendermint/proxy"
 	tmtypes "github.com/tendermint/tendermint/types"
 	"go.uber.org/multierr"
@@ -552,6 +555,58 @@ func (m *Manager) publishBlock(ctx context.Context) error {
 	m.store.SetHeight(uint64(block.Header.Height()))
 
 	m.publishSignedHeader(block, commit)
+
+	// Save commit like tendermint, just for IBC test.
+	// Or make the chain base rollkit become solochain?
+	address, err := getAddress(m.proposerKey)
+	if err != nil {
+		return err
+	}
+
+	abciBlock, err := abciconv.ToABCIBlock(block)
+	if err != nil {
+		return err
+	}
+
+	abciBlockPartSet := abciBlock.MakePartSet(tmtypes.BlockPartSizeBytes)
+
+	vote := tmtypes.Vote{
+		Type:             tmproto.PrecommitType,
+		Height:           block.Header.Height(),
+		Round:            0,
+		Timestamp:        block.Header.Time(),
+		ValidatorAddress: address,
+		ValidatorIndex:   0,
+		BlockID: tmtypes.BlockID{
+			Hash:          abciBlock.Header.Hash(),
+			PartSetHeader: abciBlockPartSet.Header(),
+		},
+	}
+
+	v := vote.ToProto()
+	vb := tmtypes.VoteSignBytes(m.genesis.ChainID, v)
+	sig, err := m.proposerKey.Sign(vb)
+
+	if err != nil {
+		return err
+	}
+
+	vc := tmtypes.Commit{
+		Height:  vote.Height,
+		Round:   vote.Round,
+		BlockID: vote.BlockID,
+		Signatures: []tmtypes.CommitSig{{
+			BlockIDFlag:      tmtypes.BlockIDFlagCommit,
+			ValidatorAddress: address,
+			Timestamp:        v.Timestamp,
+			Signature:        sig,
+		}},
+	}
+
+	err = m.store.SaveTmCommit(block, &vc)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
